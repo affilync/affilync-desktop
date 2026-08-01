@@ -6,7 +6,15 @@ softphone) and brands. Part of the Affilync platform (see `/home/ninja/codex/CLA
 ## Architecture (read before changing anything)
 
 - **No renderer code lives here.** The renderer IS the production web app; this repo only ships a main
-  process + preload bridge. Do not add local HTML/React beyond the inline offline retry page.
+  process + preload bridge. The only sanctioned local surfaces are the inline offline retry page and
+  the **Relay** device page (src/main/relay.ts) — a static data:-URL popup with no network access,
+  fed exclusively by IPC payloads that main validates. Do not add local HTML/React beyond these two,
+  and never give a local surface network or auth.
+- **Relay (bridge v2):** the incoming-call device — a small frameless always-on-top window that pops
+  on inbound ring (caller identity + campaign/queue + Answer/Decline). The softphone in the hidden
+  main window stays the single owner of call state; Relay only displays and forwards button presses
+  (`relay-action` → `relay-command`). Shown with showInactive (never steals focus), hidden on any
+  tray-status transition off `ringing`, destroyed on quit, 75s zombie-ring fallback timer.
 - **Remote-shell auth invariant:** loading the real `app.affilync.com` origin is what makes httpOnly
   cookie auth, CSRF double-submit, and CORS work with ZERO api changes. Never switch to a local bundle
   without solving header auth + CORS first (v2 topic — see plan notes in affilync-web history).
@@ -26,6 +34,7 @@ softphone) and brands. Part of the Affilync platform (see `/home/ninja/codex/CLA
 
 ```bash
 npm run typecheck   # strict tsc, main + preload projects
+npm test            # build + node --test (relay payload sanitizer)
 npm start           # build + run (AFFILYNC_APP_URL overrides target)
 npm run dist:dir    # local unpackaged build
 ```

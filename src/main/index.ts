@@ -15,6 +15,7 @@ import { ensureMacMicrophoneAccess, registerPermissionHandlers } from './permiss
 import { isCallActive, registerWakeRecovery } from './power';
 import { createTray, hasTray } from './tray';
 import { initUpdater } from './updater';
+import { destroyRelay } from './relay';
 import { createMainWindow, getMainWindow, setQuitting, showMainWindow } from './window';
 
 // Windows toast identity (and NSIS Start-menu shortcut attribution).
@@ -78,5 +79,8 @@ if (!gotLock) {
       return;
     }
     setQuitting(true);
+    // The Relay device is frameless + skipTaskbar; destroy it explicitly so
+    // it can never outlive the app as an orphaned always-on-top window.
+    destroyRelay();
   });
 }

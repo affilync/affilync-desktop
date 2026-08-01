@@ -9,7 +9,13 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 
-import { BRIDGE_VERSION, IPC, TrayStatus } from '../shared/ipc-channels';
+import {
+  BRIDGE_VERSION,
+  IPC,
+  RelayCallPayload,
+  RelayCommand,
+  TrayStatus,
+} from '../shared/ipc-channels';
 
 export interface AffilyncDesktopAPI {
   readonly bridgeVersion: typeof BRIDGE_VERSION;
@@ -22,6 +28,12 @@ export interface AffilyncDesktopAPI {
   powerSaveBlockStart(): void;
   powerSaveBlockStop(): void;
   onDeepLink(cb: (url: string) => void): () => void;
+  /** Relay (bridge v2): pop the incoming-call device. */
+  relayIncoming(call: RelayCallPayload): void;
+  /** Relay (bridge v2): ring ended (answered elsewhere / cancelled) — hide it. */
+  relayHide(): void;
+  /** Relay (bridge v2): the agent pressed Answer/Decline on the device. */
+  onRelayCommand(cb: (command: RelayCommand) => void): () => void;
 }
 
 // Main passes the app version via additionalArguments (sandbox-safe).
@@ -44,6 +56,15 @@ const api: AffilyncDesktopAPI = {
     };
     ipcRenderer.on(IPC.DEEP_LINK, listener);
     return () => ipcRenderer.removeListener(IPC.DEEP_LINK, listener);
+  },
+  relayIncoming: (call) => ipcRenderer.send(IPC.RELAY_INCOMING, call),
+  relayHide: () => ipcRenderer.send(IPC.RELAY_HIDE),
+  onRelayCommand: (cb) => {
+    const listener = (_event: Electron.IpcRendererEvent, command: RelayCommand) => {
+      if (command === 'answer' || command === 'decline') cb(command);
+    };
+    ipcRenderer.on(IPC.RELAY_COMMAND, listener);
+    return () => ipcRenderer.removeListener(IPC.RELAY_COMMAND, listener);
   },
 };
 
