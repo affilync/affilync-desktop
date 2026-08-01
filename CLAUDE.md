@@ -1,7 +1,7 @@
 # affilync-desktop
 
 Electron **remote shell** over https://app.affilync.com for call-center agents (always-available
-softphone) and brands. Part of the Affilync platform (see `/home/ninja/codex/CLAUDE.md`).
+softphone) and brands. Part of the Affilync platform.
 
 ## Architecture (read before changing anything)
 
@@ -17,7 +17,7 @@ softphone) and brands. Part of the Affilync platform (see `/home/ninja/codex/CLA
   tray-status transition off `ringing`, destroyed on quit, 75s zombie-ring fallback timer.
 - **Remote-shell auth invariant:** loading the real `app.affilync.com` origin is what makes httpOnly
   cookie auth, CSRF double-submit, and CORS work with ZERO api changes. Never switch to a local bundle
-  without solving header auth + CORS first (v2 topic — see plan notes in affilync-web history).
+  without solving header auth + CORS first (a future-major topic).
 - **Tray-resident lifecycle:** window close → hide; app quits only from tray / before-quit. The hidden
   renderer keeps the softphone SIP registration alive — `backgroundThrottling: false` in window.ts is
   load-bearing; removing it silently breaks hidden-window ringing.
