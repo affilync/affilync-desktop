@@ -1,7 +1,7 @@
 {
   "name": "affilync-desktop",
   "productName": "Affilync",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Affilync desktop app — always-available call-center softphone and brand dashboard",
   "main": "dist/main/index.js",
   "author": "Affilync <info@affilync.com>",
